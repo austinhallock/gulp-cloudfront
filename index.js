@@ -41,8 +41,7 @@ module.exports = function(options) {
                     Id: options.distributionId,
                     DistributionConfig: data.DistributionConfig
                 }, function(err, data) {
-                    console.log(err)
-                    console.log(data)
+
                     if (err) {                
                         deferred.reject(err);
                     } else {
@@ -61,7 +60,7 @@ module.exports = function(options) {
     return through.obj(function (file, enc, callback) {
 
         var self = this;
-				console.log(file.path)
+
         // Update the default root object once we've found the index.html file
         if (file.path.match(/index\-[a-f0-9]{0,8}\.html(\.gz)?$/gi)) {           
         		// get rid of .gz (removed with gzip module) 
