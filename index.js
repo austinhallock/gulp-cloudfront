@@ -15,7 +15,6 @@ module.exports = function(options) {
     });
 
     var updateDefaultRootObject = function (defaultRootObject) {
-
         var deferred = Q.defer();
 
         // Get the existing distribution id
@@ -30,7 +29,10 @@ module.exports = function(options) {
                 if (data.DistributionConfig.Logging.Enabled == false) {
                     data.DistributionConfig.Logging.Bucket = '';
                     data.DistributionConfig.Logging.Prefix = '';
-                }                
+                }
+                if (data.DistributionConfig.Origins.Items[0]) {
+                	data.DistributionConfig.Origins.Items[0].S3OriginConfig.OriginAccessIdentity = '';
+                }
 
                 // Update the distribution with the new default root object
                 data.DistributionConfig.DefaultRootObject = defaultRootObject;
@@ -39,7 +41,8 @@ module.exports = function(options) {
                     Id: options.distributionId,
                     DistributionConfig: data.DistributionConfig
                 }, function(err, data) {
-                    
+                    console.log(err)
+                    console.log(data)
                     if (err) {                
                         deferred.reject(err);
                     } else {
@@ -58,10 +61,11 @@ module.exports = function(options) {
     return through.obj(function (file, enc, callback) {
 
         var self = this;
-
+				console.log(file.path)
         // Update the default root object once we've found the index.html file
-        if (file.path.match(/index\-[a-f0-9]{8}\.html$/gi)) {            
-
+        if (file.path.match(/index\-[a-f0-9]{0,8}\.html(\.gz)?$/gi)) {           
+        		// get rid of .gz (removed with gzip module) 
+						file.path = file.path.replace(/\.gz$/gi, '')
             updateDefaultRootObject(path.basename(file.path))
                 .then(function() {
                     return callback(null, file);                
