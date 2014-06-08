@@ -14,6 +14,29 @@ module.exports = function(options) {
         secretAccessKey: options.secret
     });
 
+		// items = array of files to invalidate eg. [index.html, cache.appcache]
+    var invalidateCache = function(items) {
+			cloudfront.createInvalidation({
+	      DistributionId: options.distributionId,
+	      InvalidationBatch: {
+	      	CallerReference: Date.now().toString(),
+		      Paths: {
+		        Quantity: items.length,
+		        Items: items
+		      }
+		    }
+	    }, function(err, data) {
+	      if(err) {
+	        gutil.log("Invalidation failed: ", err);
+	      }
+	      else {
+	        gutil.log("Invalidation request successful - takes a few minutes to complete.");
+	      }
+			});
+		};
+		if(options.invalidateItems)
+			invalidateCache(options.invalidateItems);
+		
     var updateDefaultRootObject = function (defaultRootObject) {
         var deferred = Q.defer();
 
@@ -79,6 +102,5 @@ module.exports = function(options) {
         }
 
     });
-
 
 };
